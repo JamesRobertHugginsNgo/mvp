@@ -1,0 +1,20 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"lib": [
+			"es2022"
+		],
+		"module": "nodenext",
+		"outDir": "../../dist",
+		"target": "es2022",
+		"useDefineForClassFields": true
+	},
+	"include": [
+		"./**/*.ts"
+	],
+	"references": [
+		{
+			"path": "../lib"
+		}
+	]
+}

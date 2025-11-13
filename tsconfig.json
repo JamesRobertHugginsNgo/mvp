@@ -1,0 +1,25 @@
+{
+	"compilerOptions": {
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"noEmit": true,
+		"target": "es2022",
+		"useDefineForClassFields": true
+	},
+	"exclude": [
+		"dist",
+		"node_modules",
+		"parcel"
+	],
+	"references": [
+		{
+			"path": "./src/node"
+		},
+		{
+			"path": "./src/web"
+		},
+		{
+			"path": "./src/lib"
+		}
+	]
+}

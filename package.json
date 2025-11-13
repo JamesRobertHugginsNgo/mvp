@@ -1,0 +1,21 @@
+{
+  "name": "mvp",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc --build",
+    "watch": "tsc --watch",
+    "parcel:build": "parcel build src/parcel/index.html --no-optimize --dist-dir dist/parcel",
+    "parcel:watch": "parcel src/parcel/index.html --dist-dir dist/parcel"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "parcel": "^2.16.1",
+    "typescript": "^5.9.3"
+  }
+}
