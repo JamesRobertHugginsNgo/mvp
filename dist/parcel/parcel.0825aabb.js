@@ -721,44 +721,48 @@ var _matchRouteJs = require("../lib/match-route.js");
 var _matchRouteJsDefault = parcelHelpers.interopDefault(_matchRouteJs);
 var _routerJs = require("../web/router.js");
 var _routerJsDefault = parcelHelpers.interopDefault(_routerJs);
-(0, _indexJsDefault.default)('PARCEL');
-let lastHash = null;
-(0, _routerJsDefault.default).route = function(data, event) {
-    const hash = window.location.hash;
-    if (lastHash === hash) return;
-    // NO HASH CHECK
-    if (hash[0] !== '#') return void (0, _routerJsDefault.default).replaceState(null, '#/');
-    // BOOKMARK CHECK
-    if (hash[1] !== '/') {
-        if (lastHash === null) return void (0, _routerJsDefault.default).pushState(null, '#/');
-        return void (0, _routerJsDefault.default).replaceState(null, lastHash, false);
-    }
-    lastHash = hash;
-    let match = null;
-    switch(true){
-        case !!(match = (0, _matchRouteJsDefault.default)('#/', hash)):
-            console.group('HOME');
-            console.log('MATCH', match);
-            console.groupEnd();
-            break;
-        case !!(match = (0, _matchRouteJsDefault.default)('#/page/**/:subpage/', hash) ?? (0, _matchRouteJsDefault.default)('#/page/', hash)):
-            console.group('PAGE');
-            console.log('MATCH', match);
-            console.groupEnd();
-            break;
-        case !!(match = (0, _matchRouteJsDefault.default)('#/redirect/', hash)):
-            console.group('REDIRECT');
-            console.log('MATCH', match);
-            console.groupEnd();
-            (0, _routerJsDefault.default).replaceState(null, '#/page/redirect/redirectpage/');
-            break;
-        default:
-            console.log('404');
-    }
-};
-(0, _routerJsDefault.default).start();
+var _navViewJs = require("./nav-view.js");
+const HOME_HASH = '#/';
+document.addEventListener('DOMContentLoaded', ()=>{
+    (0, _indexJsDefault.default)('PARCEL');
+    let lastHash = null;
+    (0, _routerJsDefault.default).route = function(data, event) {
+        const hash = window.location.hash;
+        if (lastHash === hash) return;
+        // NO HASH CHECK
+        if (hash[0] !== '#') return void (0, _routerJsDefault.default).replaceState(null, HOME_HASH);
+        // BOOKMARK CHECK
+        if (hash[1] !== '/') {
+            if (lastHash === null) return void (0, _routerJsDefault.default).pushState(null, HOME_HASH);
+            return void (0, _routerJsDefault.default).replaceState(null, lastHash, false);
+        }
+        lastHash = hash;
+        let match = null;
+        switch(true){
+            case !!(match = (0, _matchRouteJsDefault.default)('#/', hash)):
+                console.group('HOME');
+                console.log('MATCH', match);
+                console.groupEnd();
+                break;
+            case !!(match = (0, _matchRouteJsDefault.default)('#/page/**/:subpage/', hash) ?? (0, _matchRouteJsDefault.default)('#/page/', hash)):
+                console.group('PAGE');
+                console.log('MATCH', match);
+                console.groupEnd();
+                break;
+            case !!(match = (0, _matchRouteJsDefault.default)('#/redirect/', hash)):
+                console.group('REDIRECT');
+                console.log('MATCH', match);
+                console.groupEnd();
+                (0, _routerJsDefault.default).replaceState(null, '#/page/redirect/redirectpage/');
+                break;
+            default:
+                console.log('404');
+        }
+    };
+    (0, _routerJsDefault.default).start();
+});
 
-},{"../lib/index.js":"3Rr4P","../web/router.js":"3KlAH","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","../lib/match-route.js":"hSidB"}],"3Rr4P":[function(require,module,exports,__globalThis) {
+},{"../lib/index.js":"3Rr4P","../lib/match-route.js":"hSidB","../web/router.js":"3KlAH","./nav-view.js":"6coZE","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3Rr4P":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>lib);
@@ -797,41 +801,7 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}],"3KlAH":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-function eventHandler(event) {
-    return Router.route(null, event);
-}
-let hasStarted = false;
-const Router = {
-    route (data, event) {
-        throw new Error('route requires implementation');
-    },
-    start (trigger = true) {
-        window.addEventListener('popstate', eventHandler);
-        hasStarted = true;
-        if (trigger) this.route(null);
-    },
-    pushState (data, url, trigger = true) {
-        if (!hasStarted) return;
-        window.history.pushState(data, '', url);
-        if (trigger) this.route(data);
-    },
-    replaceState (data, url, trigger = true) {
-        if (!hasStarted) return;
-        window.history.replaceState(data, '', url);
-        if (trigger) this.route(data);
-    },
-    stop () {
-        if (!hasStarted) return;
-        window.removeEventListener('popstate', eventHandler);
-        hasStarted = false;
-    }
-};
-exports.default = Router;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"hSidB":[function(require,module,exports,__globalThis) {
+},{}],"hSidB":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>matchRoute);
@@ -933,6 +903,156 @@ function matchSegments(patternSegments, pathSegments, greedy = true) {
     };
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}]},["3KYlF","cIdJC"], "cIdJC", "parcelRequired0a1", {})
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3KlAH":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+function eventHandler(event) {
+    return Router.route(null, event);
+}
+let hasStarted = false;
+const Router = {
+    route (data, event) {
+        throw new Error('route requires implementation');
+    },
+    start (trigger = true) {
+        window.addEventListener('popstate', eventHandler);
+        hasStarted = true;
+        if (trigger) this.route(null);
+    },
+    pushState (data, url, trigger = true) {
+        if (!hasStarted) return;
+        window.history.pushState(data, '', url);
+        if (trigger) this.route(data);
+    },
+    replaceState (data, url, trigger = true) {
+        if (!hasStarted) return;
+        window.history.replaceState(data, '', url);
+        if (trigger) this.route(data);
+    },
+    stop () {
+        if (!hasStarted) return;
+        window.removeEventListener('popstate', eventHandler);
+        hasStarted = false;
+    }
+};
+exports.default = Router;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"6coZE":[function(require,module,exports,__globalThis) {
+// == TEMPLATE ==
+const templateEl = document.createElement('template');
+templateEl.innerHTML = `
+	<p>
+		<a class="btn btn-light" href="#/">Home</a>
+		<a class="btn btn-light" href="#/page/">Page</a>
+		<a class="btn btn-light" href="#/page/subpage/">Sub Page</a>
+		<a class="btn btn-light" href="#/redirect/">Redirect</a>
+		<a class="btn btn-light" href="#/404/">404</a>
+	</p>
+`;
+// == CLASS ==
+class NavView extends HTMLElement {
+    // -- STATIC --
+    // PROPERTY(IES)
+    static observedAttributes = [
+        'querystring'
+    ];
+    // -- PRIVATE --
+    // PROPERTY(IES)
+    #eventListeners = {
+        'click': (event)=>{
+            console.log('CLICK', event);
+        }
+    };
+    #innerContent = (()=>{
+        const innerContent = document.createElement('div');
+        innerContent.setAttribute('data-view-content', '');
+        return innerContent;
+    })();
+    #isObservingMutation = false;
+    #mutationObserver = (()=>{
+        return new MutationObserver((mutationsList)=>{
+            this.#render();
+        });
+    })();
+    #queryString = null;
+    // METHOD(S)
+    #mutationObserverDisconnect() {
+        this.#mutationObserver.disconnect();
+        this.#isObservingMutation = false;
+    }
+    #mutationObserverObserve() {
+        this.#mutationObserver.observe(this, {
+            childList: true
+        });
+        this.#isObservingMutation = true;
+    }
+    #render() {
+        this.#withMutationObservationSuspended(()=>{
+            this.#innerContent.replaceChildren(templateEl.content.cloneNode(true));
+            this.#renderQueryString();
+            this.replaceChildren(this.#innerContent);
+        });
+    }
+    #renderQueryString() {
+        this.#withMutationObservationSuspended(()=>{
+            for (const link of Array.from(this.#innerContent.querySelectorAll('a'))){
+                const [base] = link.href.split('?');
+                link.href = this.#queryString === null ? base : `${base}?${this.#queryString}`;
+            }
+        });
+    }
+    #withMutationObservationSuspended(render) {
+        const wasMutationObserverObserving = this.#isObservingMutation;
+        if (wasMutationObserverObserving) this.#mutationObserverDisconnect();
+        try {
+            render();
+        } finally{
+            if (wasMutationObserverObserving) this.#mutationObserverObserve();
+        }
+    }
+    // -- PROTECTED --
+    // -- PUBLIC --
+    // GETTER(S) & SETTER(S)
+    get queryString() {
+        return this.#queryString;
+    }
+    set queryString(newValue) {
+        const oldValue = this.#queryString;
+        if (oldValue === newValue) return;
+        this.#queryString = newValue;
+        this.#renderQueryString();
+        this.dispatchEvent(new CustomEvent('propertychange', {
+            detail: {
+                property: 'quryString',
+                oldValue,
+                newValue
+            },
+            bubbles: true,
+            composed: true
+        }));
+    }
+    // METHOD(S)
+    // -- LIFE CYCLE --
+    connectedCallback() {
+        this.#render();
+        if (this.#eventListeners !== undefined) for(const event in this.#eventListeners)this.addEventListener(event, this.#eventListeners[event]);
+        this.#mutationObserverObserve();
+    }
+    disconnectedCallback() {
+        if (this.#eventListeners !== undefined) for(const event in this.#eventListeners)this.removeEventListener(event, this.#eventListeners[event]);
+        this.#mutationObserverDisconnect();
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+        switch(name){
+            case 'querystring':
+                this.queryString = newValue;
+                break;
+        }
+    }
+}
+// == DEFINE ==
+customElements.define('nav-view', NavView);
+
+},{}]},["3KYlF","cIdJC"], "cIdJC", "parcelRequired0a1", {})
 
 //# sourceMappingURL=parcel.0825aabb.js.map
