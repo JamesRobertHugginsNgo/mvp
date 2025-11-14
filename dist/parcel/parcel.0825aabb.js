@@ -994,7 +994,7 @@ class NavView extends HTMLElement {
         if (oldValue === newValue) return;
         this.#queryString = newValue;
         this.#renderQueryString();
-        this.#viewManager.dispatchPropertChangeEvent(oldValue, newValue);
+        this.#viewManager.dispatchPropertChangeEvent('quryString', oldValue, newValue);
     }
     // METHOD(S)
     // -- LIFE CYCLE --
@@ -1055,10 +1055,10 @@ class ViewManager {
     eventListenersRemove() {
         for(const event in this.#eventListeners)this.#view.removeEventListener(event, this.#eventListeners[event]);
     }
-    dispatchPropertChangeEvent(oldValue, newValue) {
+    dispatchPropertChangeEvent(property, oldValue, newValue) {
         this.#view.dispatchEvent(new CustomEvent('propertychange', {
             detail: {
-                property: 'quryString',
+                property,
                 oldValue,
                 newValue
             },

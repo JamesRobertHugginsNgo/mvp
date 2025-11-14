@@ -74,7 +74,7 @@ class NavView extends HTMLElement {
 
 		this.#queryString = newValue;
 		this.#renderQueryString();
-		this.#viewManager.dispatchPropertChangeEvent(oldValue, newValue);
+		this.#viewManager.dispatchPropertChangeEvent('quryString', oldValue, newValue);
 	}
 
 	// METHOD(S)

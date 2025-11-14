@@ -31,9 +31,9 @@ export default class ViewManager {
 		}
 	}
 
-	dispatchPropertChangeEvent(oldValue: any, newValue: any): void {
+	dispatchPropertChangeEvent(property: string, oldValue: any, newValue: any): void {
 		this.#view.dispatchEvent(new CustomEvent('propertychange', {
-			detail: { property: 'quryString', oldValue, newValue },
+			detail: { property, oldValue, newValue },
 			bubbles: true,
 			composed: true
 		}));
