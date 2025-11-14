@@ -1,3 +1,5 @@
+import ViewManager, { makeInnerContent } from '../web/view-manager.js';
+
 // == TEMPLATE ==
 
 const templateEl: HTMLTemplateElement = document.createElement('template');
@@ -25,65 +27,33 @@ class NavView extends HTMLElement {
 
 	// PROPERTY(IES)
 
-	#eventListeners: Record<string, (event: Event) => any> = {
-		'click': (event: Event) => {
-			console.log('CLICK', event);
-		}
-	};
-	#innerContent = ((): HTMLElement => {
-		const innerContent = document.createElement('div');
-		innerContent.setAttribute('data-view-content', '');
-		return innerContent;
-	})();
-	#isObservingMutation = false;
-	#mutationObserver = ((): MutationObserver => {
-		return new MutationObserver((mutationsList: MutationRecord[]) => {
-			this.#render();
-		});
-	})();
+	#hasRendered = false;
+	#innerContent: HTMLElement;
 	#queryString: string | null = null;
+	#viewManager: ViewManager;
 
 	// METHOD(S)
 
-	#mutationObserverDisconnect(): void {
-		this.#mutationObserver.disconnect();
-		this.#isObservingMutation = false;
-	}
-
-	#mutationObserverObserve(): void {
-		this.#mutationObserver.observe(this, { childList: true });
-		this.#isObservingMutation = true;
-	}
-
 	#render(): void {
-		this.#withMutationObservationSuspended(() => {
+		this.#viewManager.withMutationObserverSuspended(() => {
 			this.#innerContent.replaceChildren(templateEl.content.cloneNode(true));
+			this.#hasRendered = true;
 			this.#renderQueryString();
 			this.replaceChildren(this.#innerContent!);
 		});
 	}
 
 	#renderQueryString(): void {
-		this.#withMutationObservationSuspended(() => {
+		if (!this.#hasRendered) {
+			return;
+		}
+
+		this.#viewManager.withMutationObserverSuspended(() => {
 			for (const link of Array.from(this.#innerContent.querySelectorAll('a'))) {
 				const [base] = link.href.split('?');
 				link.href = this.#queryString === null ? base : `${base}?${this.#queryString}`
 			}
 		});
-	}
-
-	#withMutationObservationSuspended(render: () => void): void {
-		const wasMutationObserverObserving = this.#isObservingMutation;
-		if (wasMutationObserverObserving) {
-			this.#mutationObserverDisconnect()
-		}
-		try {
-			render();
-		} finally {
-			if (wasMutationObserverObserving) {
-				this.#mutationObserverObserve();
-			}
-		}
 	}
 
 	// -- PROTECTED --
@@ -103,40 +73,41 @@ class NavView extends HTMLElement {
 		}
 
 		this.#queryString = newValue;
-
 		this.#renderQueryString();
-
-		this.dispatchEvent(new CustomEvent('propertychange', {
-			detail: { property: 'quryString', oldValue, newValue },
-			bubbles: true,
-			composed: true
-		}));
+		this.#viewManager.dispatchPropertChangeEvent(oldValue, newValue);
 	}
 
 	// METHOD(S)
 
 	// -- LIFE CYCLE --
 
+	constructor() {
+		super();
+
+		this.#innerContent = makeInnerContent();
+
+		const mutationCallback = () => {
+			this.#render();
+		};
+
+		const eventListeners = {
+			'click': (event: Event) => {
+				console.log('CLICK', event);
+			}
+		};
+
+		this.#viewManager = new ViewManager(this, mutationCallback, eventListeners);
+	}
+
 	connectedCallback(): void {
 		this.#render();
-
-		if (this.#eventListeners !== undefined) {
-			for (const event in this.#eventListeners) {
-				this.addEventListener(event, this.#eventListeners[event]);
-			}
-		}
-
-		this.#mutationObserverObserve();
+		this.#viewManager.eventListenersAdd();
+		this.#viewManager.mutationObserverObserve();
 	}
 
 	disconnectedCallback(): void {
-		if (this.#eventListeners !== undefined) {
-			for (const event in this.#eventListeners) {
-				this.removeEventListener(event, this.#eventListeners[event]);
-			}
-		}
-
-		this.#mutationObserverDisconnect();
+		this.#viewManager.eventListenersRemove();
+		this.#viewManager.mutationObserverDisconnect();
 	}
 
 	attributeChangedCallback(name: string, oldValue: null | string, newValue: null | string): void {

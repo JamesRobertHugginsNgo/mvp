@@ -938,6 +938,9 @@ const Router = {
 exports.default = Router;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"6coZE":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+var _viewManagerJs = require("../web/view-manager.js");
+var _viewManagerJsDefault = parcelHelpers.interopDefault(_viewManagerJs);
 // == TEMPLATE ==
 const templateEl = document.createElement('template');
 templateEl.innerHTML = `
@@ -958,57 +961,27 @@ class NavView extends HTMLElement {
     ];
     // -- PRIVATE --
     // PROPERTY(IES)
-    #eventListeners = {
-        'click': (event)=>{
-            console.log('CLICK', event);
-        }
-    };
-    #innerContent = (()=>{
-        const innerContent = document.createElement('div');
-        innerContent.setAttribute('data-view-content', '');
-        return innerContent;
-    })();
-    #isObservingMutation = false;
-    #mutationObserver = (()=>{
-        return new MutationObserver((mutationsList)=>{
-            this.#render();
-        });
-    })();
+    #hasRendered = false;
+    #innerContent;
     #queryString = null;
+    #viewManager;
     // METHOD(S)
-    #mutationObserverDisconnect() {
-        this.#mutationObserver.disconnect();
-        this.#isObservingMutation = false;
-    }
-    #mutationObserverObserve() {
-        this.#mutationObserver.observe(this, {
-            childList: true
-        });
-        this.#isObservingMutation = true;
-    }
     #render() {
-        this.#withMutationObservationSuspended(()=>{
+        this.#viewManager.withMutationObserverSuspended(()=>{
             this.#innerContent.replaceChildren(templateEl.content.cloneNode(true));
+            this.#hasRendered = true;
             this.#renderQueryString();
             this.replaceChildren(this.#innerContent);
         });
     }
     #renderQueryString() {
-        this.#withMutationObservationSuspended(()=>{
+        if (!this.#hasRendered) return;
+        this.#viewManager.withMutationObserverSuspended(()=>{
             for (const link of Array.from(this.#innerContent.querySelectorAll('a'))){
                 const [base] = link.href.split('?');
                 link.href = this.#queryString === null ? base : `${base}?${this.#queryString}`;
             }
         });
-    }
-    #withMutationObservationSuspended(render) {
-        const wasMutationObserverObserving = this.#isObservingMutation;
-        if (wasMutationObserverObserving) this.#mutationObserverDisconnect();
-        try {
-            render();
-        } finally{
-            if (wasMutationObserverObserving) this.#mutationObserverObserve();
-        }
     }
     // -- PROTECTED --
     // -- PUBLIC --
@@ -1021,26 +994,31 @@ class NavView extends HTMLElement {
         if (oldValue === newValue) return;
         this.#queryString = newValue;
         this.#renderQueryString();
-        this.dispatchEvent(new CustomEvent('propertychange', {
-            detail: {
-                property: 'quryString',
-                oldValue,
-                newValue
-            },
-            bubbles: true,
-            composed: true
-        }));
+        this.#viewManager.dispatchPropertChangeEvent(oldValue, newValue);
     }
     // METHOD(S)
     // -- LIFE CYCLE --
+    constructor(){
+        super();
+        this.#innerContent = (0, _viewManagerJs.makeInnerContent)();
+        const mutationCallback = ()=>{
+            this.#render();
+        };
+        const eventListeners = {
+            'click': (event)=>{
+                console.log('CLICK', event);
+            }
+        };
+        this.#viewManager = new (0, _viewManagerJsDefault.default)(this, mutationCallback, eventListeners);
+    }
     connectedCallback() {
         this.#render();
-        if (this.#eventListeners !== undefined) for(const event in this.#eventListeners)this.addEventListener(event, this.#eventListeners[event]);
-        this.#mutationObserverObserve();
+        this.#viewManager.eventListenersAdd();
+        this.#viewManager.mutationObserverObserve();
     }
     disconnectedCallback() {
-        if (this.#eventListeners !== undefined) for(const event in this.#eventListeners)this.removeEventListener(event, this.#eventListeners[event]);
-        this.#mutationObserverDisconnect();
+        this.#viewManager.eventListenersRemove();
+        this.#viewManager.mutationObserverDisconnect();
     }
     attributeChangedCallback(name, oldValue, newValue) {
         switch(name){
@@ -1053,6 +1031,71 @@ class NavView extends HTMLElement {
 // == DEFINE ==
 customElements.define('nav-view', NavView);
 
-},{}]},["3KYlF","cIdJC"], "cIdJC", "parcelRequired0a1", {})
+},{"../web/view-manager.js":"gEFTN","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"gEFTN":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "makeInnerContent", ()=>makeInnerContent);
+function makeInnerContent() {
+    const innerContent = document.createElement('div');
+    innerContent.setAttribute('data-inner-content', '');
+    return innerContent;
+}
+class ViewManager {
+    // -- PRIVATE --
+    // PROPERTY(IES)
+    #eventListeners;
+    #isObservingMutation = false;
+    #mutationObserver;
+    #view;
+    // -- PUBLIC --
+    // METHOD(S)
+    eventListenersAdd() {
+        for(const event in this.#eventListeners)this.#view.addEventListener(event, this.#eventListeners[event]);
+    }
+    eventListenersRemove() {
+        for(const event in this.#eventListeners)this.#view.removeEventListener(event, this.#eventListeners[event]);
+    }
+    dispatchPropertChangeEvent(oldValue, newValue) {
+        this.#view.dispatchEvent(new CustomEvent('propertychange', {
+            detail: {
+                property: 'quryString',
+                oldValue,
+                newValue
+            },
+            bubbles: true,
+            composed: true
+        }));
+    }
+    mutationObserverDisconnect() {
+        if (!this.#isObservingMutation) return;
+        this.#mutationObserver.disconnect();
+        this.#isObservingMutation = false;
+    }
+    mutationObserverObserve() {
+        if (this.#isObservingMutation) return;
+        this.#mutationObserver.observe(this.#view, {
+            childList: true
+        });
+        this.#isObservingMutation = true;
+    }
+    withMutationObserverSuspended(render) {
+        const wasMutationObserverObserving = this.#isObservingMutation;
+        if (wasMutationObserverObserving) this.mutationObserverDisconnect();
+        try {
+            render();
+        } finally{
+            if (wasMutationObserverObserving) this.mutationObserverObserve();
+        }
+    }
+    // -- LIFE CYCLE --
+    constructor(view, mutationCallback, eventListeners){
+        this.#view = view;
+        this.#mutationObserver = new MutationObserver(mutationCallback);
+        this.#eventListeners = eventListeners;
+    }
+}
+exports.default = ViewManager;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}]},["3KYlF","cIdJC"], "cIdJC", "parcelRequired0a1", {})
 
 //# sourceMappingURL=parcel.0825aabb.js.map
