@@ -4,24 +4,20 @@ import { ViewManager } from '../web/view-manager.js';
 
 const templateEl: HTMLTemplateElement = document.createElement('template');
 templateEl.innerHTML = `
-	<p>
-		<a class="btn btn-light" href="#/">Home</a>
-		<a class="btn btn-light" href="#/page/">Page</a>
-		<a class="btn btn-light" href="#/page/subpage/">Sub Page</a>
-		<a class="btn btn-light" href="#/redirect/">Redirect</a>
-		<a class="btn btn-light" href="#/404/">404</a>
-	</p>
+	<h1>Page</h1>
+	<div data-sub-title></div>
+	<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque fugiat blanditiis commodi ab delectus sit eius quod iste eum nostrum, officia deserunt nesciunt praesentium voluptatem porro cum nam libero quo!</p>
 `;
 
 // == CLASS(ES) ==
 
-class NavView extends HTMLElement {
+export default class PageView extends HTMLElement {
 
 	// -- STATIC --
 
 	// PROPERTY(IES)
 
-	static observedAttributes: string[] = ['querystring'];
+	static observedAttributes: string[] = ['subtitle'];
 
 	// -- PRIVATE --
 
@@ -29,7 +25,7 @@ class NavView extends HTMLElement {
 
 	#hasRendered = false;
 	#innerContent: HTMLElement;
-	#queryString: string | null = null;
+	#subTitle: string | null = null;
 	#viewManager: ViewManager;
 
 	// METHOD(S)
@@ -38,21 +34,20 @@ class NavView extends HTMLElement {
 		this.#viewManager.withMutationObserverSuspended(() => {
 			this.#innerContent.replaceChildren(templateEl.content.cloneNode(true));
 			this.#hasRendered = true;
-			this.#renderQueryString();
+			this.#renderSubString();
 			this.replaceChildren(this.#innerContent!);
 		});
 	}
 
-	#renderQueryString(): void {
+	#renderSubString(): void {
 		if (!this.#hasRendered) {
 			return;
 		}
 
 		this.#viewManager.withMutationObserverSuspended(() => {
-			for (const link of Array.from(this.#innerContent.querySelectorAll('a'))) {
-				const [base] = link.href.split('?');
-				link.href = this.#queryString === null ? base : `${base}?${this.#queryString}`
-			}
+			this.#innerContent.querySelector('[data-sub-title]')!.innerHTML = this.#subTitle === null
+				? ''
+				: `<h2 class="h5">${this.#subTitle}</h2>`;
 		});
 	}
 
@@ -62,22 +57,20 @@ class NavView extends HTMLElement {
 
 	// GETTER(S) & SETTER(S)
 
-	get queryString(): string | null {
-		return this.#queryString;
+	get subTitle(): string | null {
+		return this.#subTitle;
 	}
 
-	set queryString(newValue: string | null) {
-		const oldValue = this.#queryString;
+	set subTitle(newValue: string | null) {
+		const oldValue = this.#subTitle;
 		if (oldValue === newValue) {
 			return;
 		}
 
-		this.#queryString = newValue;
-		this.#renderQueryString();
-		this.#viewManager.dispatchPropertChangeEvent('quryString', oldValue, newValue);
+		this.#subTitle = newValue;
+		this.#renderSubString();
+		this.#viewManager.dispatchPropertChangeEvent('subTitle', oldValue, newValue);
 	}
-
-	// METHOD(S)
 
 	// -- LIFE CYCLE --
 
@@ -89,29 +82,22 @@ class NavView extends HTMLElement {
 		const mutationCallback = () => {
 			this.#render();
 		};
-		const eventListeners = {
-			'click': (event: Event) => {
-				console.log('CLICK', event);
-			}
-		};
-		this.#viewManager = new ViewManager(this, mutationCallback, eventListeners);
+		this.#viewManager = new ViewManager(this, mutationCallback);
 	}
 
 	connectedCallback(): void {
 		this.#render();
-		this.#viewManager.eventListenersAdd();
 		this.#viewManager.mutationObserverObserve();
 	}
 
 	disconnectedCallback(): void {
-		this.#viewManager.eventListenersRemove();
 		this.#viewManager.mutationObserverDisconnect();
 	}
 
 	attributeChangedCallback(name: string, oldValue: null | string, newValue: null | string): void {
 		switch (name) {
-			case 'querystring':
-				this.queryString = newValue;
+			case 'subtitle':
+				this.subTitle = newValue;
 				break;
 		}
 	}
@@ -119,4 +105,4 @@ class NavView extends HTMLElement {
 
 // == DEFINE ==
 
-customElements.define('nav-view', NavView);
+customElements.define('page-view', PageView);

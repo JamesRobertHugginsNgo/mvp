@@ -1,43 +1,31 @@
-export function makeInnerContent(): HTMLElement {
-	const innerContent = document.createElement('div');
-	innerContent.setAttribute('data-inner-content', '');
-	return innerContent;
-}
+import { EventManager } from '../lib/event-manager.js';
 
-export default class ViewManager {
+// == CLASS(ES) ==
+
+export class ViewManager extends EventManager {
+
+	// -- STATIC --
+
+	// METHOD(S)
+
+	static makeInnerContent(): HTMLElement {
+		const innerContent = document.createElement('div');
+		innerContent.setAttribute('data-inner-content', '');
+		return innerContent;
+	}
 
 	// -- PRIVATE --
 
 	// PROPERTY(IES)
 
-	#eventListeners: Record<string, EventListenerOrEventListenerObject>;
 	#isObservingMutation = false;
 	#mutationObserver: MutationObserver;
-	#view: HTMLElement;
+
+	// -- PROTECTED --
 
 	// -- PUBLIC --
 
 	// METHOD(S)
-
-	eventListenersAdd(): void {
-		for (const event in this.#eventListeners) {
-			this.#view.addEventListener(event, this.#eventListeners[event]);
-		}
-	}
-
-	eventListenersRemove(): void {
-		for (const event in this.#eventListeners) {
-			this.#view.removeEventListener(event, this.#eventListeners[event]);
-		}
-	}
-
-	dispatchPropertChangeEvent(property: string, oldValue: any, newValue: any): void {
-		this.#view.dispatchEvent(new CustomEvent('propertychange', {
-			detail: { property, oldValue, newValue },
-			bubbles: true,
-			composed: true
-		}));
-	}
 
 	mutationObserverDisconnect(): void {
 		if (!this.#isObservingMutation) {
@@ -53,7 +41,7 @@ export default class ViewManager {
 			return;
 		}
 
-		this.#mutationObserver.observe(this.#view, { childList: true });
+		this.#mutationObserver.observe(this._eventTarget as HTMLElement, { childList: true });
 		this.#isObservingMutation = true;
 	}
 
@@ -73,9 +61,9 @@ export default class ViewManager {
 
 	// -- LIFE CYCLE --
 
-	constructor(view: HTMLElement, mutationCallback: MutationCallback, eventListeners: Record<string, (event: Event) => any>) {
-		this.#view = view;
+	constructor(view: HTMLElement, mutationCallback: MutationCallback, eventListeners?: Record<string, EventListenerOrEventListenerObject>) {
+		super(view as EventTarget, eventListeners);
+
 		this.#mutationObserver = new MutationObserver(mutationCallback);
-		this.#eventListeners = eventListeners;
 	}
 }

@@ -3,14 +3,22 @@ import matchRoute, { MatchRouteResult } from '../lib/match-route.js';
 
 import Router from '../web/router.js';
 
+import './home-view.js';
 import './nav-view.js';
+import './not-found-view.js';
+import pageController from './page-controller.js';
+import './page-view.js';
+import PageModel from './page-model.js';
 
 const HOME_HASH = '#/';
 
 document.addEventListener('DOMContentLoaded', () => {
 	lib('PARCEL');
 
+	const container = document.getElementById('app');
+
 	let lastHash: string | null = null;
+	let unbind: (() => void) | null = null;
 
 	Router.route = function (data: any, event?: PopStateEvent): any {
 		const hash = window.location.hash;
@@ -35,27 +43,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		let match: MatchRouteResult = null;
 		switch (true) {
-			case !!(match = matchRoute('#/', hash)):
-				console.group('HOME');
-				console.log('MATCH', match);
-				console.groupEnd();
+			case (match = matchRoute('#/', hash)) !== null:
+				unbind?.();
+				container?.replaceChildren(document.createElement('home-view'));
 				break;
 
-			case !!(match = matchRoute('#/page/**/:subpage/', hash) ?? matchRoute('#/page/', hash)):
-				console.group('PAGE');
-				console.log('MATCH', match);
-				console.groupEnd();
+			case (match = matchRoute('#/page/**/:subpage/', hash) ?? matchRoute('#/page/', hash)) !== null:
+				unbind?.();
+				const view = document.createElement('page-view');
+				unbind = pageController(view, new PageModel({ subTitle: (match as MatchRouteResult)?.data.subpage ?? null }));
+				container?.replaceChildren(view);
 				break;
 
-			case !!(match = matchRoute('#/redirect/', hash)):
-				console.group('REDIRECT');
-				console.log('MATCH', match);
-				console.groupEnd();
+			case (match = matchRoute('#/redirect/', hash)) !== null:
 				Router.replaceState(null, '#/page/redirect/redirectpage/');
 				break;
 
 			default:
-				console.log('404');
+				unbind?.();
+				container?.replaceChildren(document.createElement('not-found-view'));
 		}
 	}
 
