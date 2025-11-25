@@ -1,5 +1,5 @@
 import { EventManager } from '../lib/event-manager.js';
-export declare class ViewManager extends EventManager {
+export declare class ViewManager extends EventManager<HTMLElement> {
     #private;
     static makeInnerContent(): HTMLElement;
     mutationObserverDisconnect(): void;

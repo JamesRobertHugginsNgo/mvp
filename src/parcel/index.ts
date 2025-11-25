@@ -49,9 +49,10 @@ document.addEventListener('DOMContentLoaded', () => {
 				break;
 
 			case (match = matchRoute('#/page/**/:subpage/', hash) ?? matchRoute('#/page/', hash)) !== null:
+				const routeMatch: MatchRouteResult = match as MatchRouteResult;
 				unbind?.();
 				const view = document.createElement('page-view');
-				unbind = pageController(view, new PageModel({ subTitle: (match as MatchRouteResult)?.data.subpage ?? null }));
+				unbind = pageController(view, new PageModel({ subTitle: routeMatch!.data.subpage ?? null }));
 				container?.replaceChildren(view);
 				break;
 

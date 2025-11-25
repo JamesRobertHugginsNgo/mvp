@@ -1,6 +1,6 @@
 // == CLASS(ES) ==
 
-export class PropertyChangeDispatcher {
+export class PropertyChangeDispatcher<T extends EventTarget> {
 
 	// -- STATIC --
 
@@ -10,7 +10,7 @@ export class PropertyChangeDispatcher {
 
 	// PROPERTY(IES)
 
-	protected _eventTarget: EventTarget;
+	protected _eventTarget: T;
 
 	// -- PUBLIC --
 
@@ -26,13 +26,13 @@ export class PropertyChangeDispatcher {
 
 	// -- LIFE CYCLE --
 
-	constructor(target: EventTarget, eventListeners: Record<string, EventListenerOrEventListenerObject> = {}) {
+	constructor(target: T, eventListeners: Record<string, EventListenerOrEventListenerObject> = {}) {
 		this._eventTarget = target;
 	}
 
 }
 
-export class EventManager extends PropertyChangeDispatcher {
+export class EventManager<T extends EventTarget> extends PropertyChangeDispatcher<T> {
 
 	// -- STATIC --
 
@@ -62,7 +62,7 @@ export class EventManager extends PropertyChangeDispatcher {
 
 	// -- LIFE CYCLE --
 
-	constructor(target: EventTarget, eventListeners: Record<string, EventListenerOrEventListenerObject> = {}) {
+	constructor(target: T, eventListeners: Record<string, EventListenerOrEventListenerObject> = {}) {
 		super(target);
 
 		this.#eventListeners = eventListeners;

@@ -2,7 +2,7 @@ import { EventManager } from '../lib/event-manager.js';
 
 // == CLASS(ES) ==
 
-export class ViewManager extends EventManager {
+export class ViewManager extends EventManager<HTMLElement> {
 
 	// -- STATIC --
 
@@ -41,7 +41,7 @@ export class ViewManager extends EventManager {
 			return;
 		}
 
-		this.#mutationObserver.observe(this._eventTarget as HTMLElement, { childList: true });
+		this.#mutationObserver.observe(this._eventTarget, { childList: true });
 		this.#isObservingMutation = true;
 	}
 
@@ -62,7 +62,7 @@ export class ViewManager extends EventManager {
 	// -- LIFE CYCLE --
 
 	constructor(view: HTMLElement, mutationCallback: MutationCallback, eventListeners?: Record<string, EventListenerOrEventListenerObject>) {
-		super(view as EventTarget, eventListeners);
+		super(view, eventListeners);
 
 		this.#mutationObserver = new MutationObserver(mutationCallback);
 	}

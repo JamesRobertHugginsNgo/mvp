@@ -558,10 +558,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 container?.replaceChildren(document.createElement('home-view'));
                 break;
             case (match = (0, $5ebb74ebe14320a0$export$2e2bcd8739ae039)('#/page/**/:subpage/', hash) ?? (0, $5ebb74ebe14320a0$export$2e2bcd8739ae039)('#/page/', hash)) !== null:
+                const routeMatch = match;
                 unbind?.();
                 const view = document.createElement('page-view');
                 unbind = (0, $6e938b508eb919ab$export$2e2bcd8739ae039)(view, new (0, $3d9e91a1fc6bd0f4$export$2e2bcd8739ae039)({
-                    subTitle: match?.data.subpage ?? null
+                    subTitle: routeMatch.data.subpage ?? null
                 }));
                 container?.replaceChildren(view);
                 break;
@@ -577,4 +578,4 @@ document.addEventListener('DOMContentLoaded', ()=>{
 });
 
 
-//# sourceMappingURL=parcel.f63ef111.js.map
+//# sourceMappingURL=parcel.0a50e38f.js.map

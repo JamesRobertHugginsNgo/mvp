@@ -10,7 +10,7 @@ export default class PageModel extends EventTarget {
 
 	// PROPERTY(IES)
 
-	#propertyChangeDispatcher: PropertyChangeDispatcher;
+	#propertyChangeDispatcher: PropertyChangeDispatcher<EventTarget>;
 	#subTitle: string | null = null;
 
 	// -- PROTECTED --
