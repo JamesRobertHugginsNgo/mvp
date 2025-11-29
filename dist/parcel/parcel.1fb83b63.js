@@ -103,36 +103,39 @@ function $5ebb74ebe14320a0$var$matchSegments(patternSegments, pathSegments, gree
 }
 
 
-function $4ab8f59ef703d096$var$eventHandler(event) {
-    return $4ab8f59ef703d096$var$Router.route(null, event);
+function $f26cd2d85ae4c756$export$2e2bcd8739ae039(route) {
+    return {
+        popStateEventListener (event) {
+            return route(null, event);
+        },
+        hasStarted: false,
+        start (trigger = true) {
+            if (this.hasStarted) throw new Error('Router has already started');
+            window.addEventListener('popstate', this.popStateEventListener);
+            this.hasStarted = true;
+            if (trigger) route(null);
+            return this;
+        },
+        stop () {
+            if (!this.hasStarted) throw new Error('Router has not yet started');
+            window.removeEventListener('popstate', this.popStateEventListener);
+            this.hasStarted = false;
+            return this;
+        },
+        pushState (data, url, trigger = true) {
+            if (!this.hasStarted) throw new Error('Router has not yet started');
+            window.history.pushState(data, '', url);
+            if (trigger) route(data);
+            return this;
+        },
+        replaceState (data, url, trigger = true) {
+            if (!this.hasStarted) throw new Error('Router has not yet started');
+            window.history.replaceState(data, '', url);
+            if (trigger) route(data);
+            return this;
+        }
+    };
 }
-let $4ab8f59ef703d096$var$hasStarted = false;
-const $4ab8f59ef703d096$var$Router = {
-    route (data, event) {
-        throw new Error('route requires implementation');
-    },
-    start (trigger = true) {
-        window.addEventListener('popstate', $4ab8f59ef703d096$var$eventHandler);
-        $4ab8f59ef703d096$var$hasStarted = true;
-        if (trigger) this.route(null);
-    },
-    pushState (data, url, trigger = true) {
-        if (!$4ab8f59ef703d096$var$hasStarted) return;
-        window.history.pushState(data, '', url);
-        if (trigger) this.route(data);
-    },
-    replaceState (data, url, trigger = true) {
-        if (!$4ab8f59ef703d096$var$hasStarted) return;
-        window.history.replaceState(data, '', url);
-        if (trigger) this.route(data);
-    },
-    stop () {
-        if (!$4ab8f59ef703d096$var$hasStarted) return;
-        window.removeEventListener('popstate', $4ab8f59ef703d096$var$eventHandler);
-        $4ab8f59ef703d096$var$hasStarted = false;
-    }
-};
-var $4ab8f59ef703d096$export$2e2bcd8739ae039 = $4ab8f59ef703d096$var$Router;
 
 
 // == CLASS(ES) ==
@@ -540,42 +543,44 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const container = document.getElementById('app');
     let lastHash = null;
     let unbind = null;
-    (0, $4ab8f59ef703d096$export$2e2bcd8739ae039).route = function(data, event) {
+    const router = (0, $f26cd2d85ae4c756$export$2e2bcd8739ae039)(function(data, event) {
         const hash = window.location.hash;
         if (lastHash === hash) return;
         // NO HASH CHECK
-        if (hash[0] !== '#') return void (0, $4ab8f59ef703d096$export$2e2bcd8739ae039).replaceState(null, $4668f03064cd1df8$var$HOME_HASH);
+        if (hash[0] !== '#') return void router.replaceState(null, $4668f03064cd1df8$var$HOME_HASH);
         // BOOKMARK CHECK
         if (hash[1] !== '/') {
-            if (lastHash === null) return void (0, $4ab8f59ef703d096$export$2e2bcd8739ae039).pushState(null, $4668f03064cd1df8$var$HOME_HASH);
-            return void (0, $4ab8f59ef703d096$export$2e2bcd8739ae039).replaceState(null, lastHash, false);
+            if (lastHash === null) return void router.pushState(null, $4668f03064cd1df8$var$HOME_HASH);
+            return void router.replaceState(null, lastHash, false);
         }
         lastHash = hash;
+        unbind?.();
+        unbind = null;
         let match = null;
-        switch(true){
-            case (match = (0, $5ebb74ebe14320a0$export$2e2bcd8739ae039)('#/', hash)) !== null:
-                unbind?.();
-                container?.replaceChildren(document.createElement('home-view'));
-                break;
-            case (match = (0, $5ebb74ebe14320a0$export$2e2bcd8739ae039)('#/page/**/:subpage/', hash) ?? (0, $5ebb74ebe14320a0$export$2e2bcd8739ae039)('#/page/', hash)) !== null:
-                const routeMatch = match;
-                unbind?.();
-                const view = document.createElement('page-view');
-                unbind = (0, $6e938b508eb919ab$export$2e2bcd8739ae039)(view, new (0, $3d9e91a1fc6bd0f4$export$2e2bcd8739ae039)({
-                    subTitle: routeMatch.data.subpage ?? null
-                }));
-                container?.replaceChildren(view);
-                break;
-            case (match = (0, $5ebb74ebe14320a0$export$2e2bcd8739ae039)('#/redirect/', hash)) !== null:
-                (0, $4ab8f59ef703d096$export$2e2bcd8739ae039).replaceState(null, '#/page/redirect/redirectpage/');
-                break;
-            default:
-                unbind?.();
-                container?.replaceChildren(document.createElement('not-found-view'));
+        match = (0, $5ebb74ebe14320a0$export$2e2bcd8739ae039)('#/', hash);
+        if (match !== null) {
+            container.replaceChildren(document.createElement('home-view'));
+            return;
         }
-    };
-    (0, $4ab8f59ef703d096$export$2e2bcd8739ae039).start();
+        match = (0, $5ebb74ebe14320a0$export$2e2bcd8739ae039)('#/page/**/:subpage/', hash) ?? (0, $5ebb74ebe14320a0$export$2e2bcd8739ae039)('#/page/', hash);
+        if (match !== null) {
+            const view = document.createElement('page-view');
+            const model = new (0, $3d9e91a1fc6bd0f4$export$2e2bcd8739ae039)({
+                subTitle: match.data.subpage ?? null
+            });
+            unbind = (0, $6e938b508eb919ab$export$2e2bcd8739ae039)(view, model);
+            container.replaceChildren(view);
+            return;
+        }
+        match = (0, $5ebb74ebe14320a0$export$2e2bcd8739ae039)('#/redirect/', hash);
+        if (match !== null) {
+            router.replaceState(null, '#/page/redirect/redirectpage/');
+            return;
+        }
+        container.replaceChildren(document.createElement('not-found-view'));
+    });
+    router.start();
 });
 
 
-//# sourceMappingURL=parcel.0a50e38f.js.map
+//# sourceMappingURL=parcel.1fb83b63.js.map

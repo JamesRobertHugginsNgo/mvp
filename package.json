@@ -17,5 +17,8 @@
     "@types/node": "^24.10.0",
     "parcel": "^2.16.1",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.8"
   }
 }
